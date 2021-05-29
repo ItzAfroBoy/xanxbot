@@ -9,9 +9,12 @@ class Info(commands.Cog):
 
     def __init__(self, client):
         self.client = client
-        self.x = self.client.get_cog('Storage')
 
     version = '1.0.0'
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.x = self.client.get_cog('Utils')
 
     @commands.group()
     async def info(self, ctx):
@@ -48,20 +51,19 @@ class Info(commands.Cog):
         member = ctx.author if not member else member
         roles = [role for role in member.roles]
         embed = discord.Embed(
-            title=f"{member.mention}'s info", color=self.x.color())
+            title=f"{member.name}'s info", color=self.x.color())
         embed.add_field(name='ID:', value=member.id)
         embed.add_field(name='Bot', value=member.bot)
         embed.add_field(name='Status:', value=member.status)
         embed.add_field(name='Nickname:', value=member.display_name)
         embed.add_field(name=f'Roles ({len(roles)}):', value=' '.join(
-            [role for role in roles]))
+            [role.name for role in roles]))
         embed.add_field(name='Account created', value=member.created_at.strftime(
             "%H:%M UTC - %a, %d %B %Y"))
         embed.add_field(name='Highest role:', value=member.top_role)
         embed.set_thumbnail(url=member.avatar_url)
         embed.set_footer(
             text=f'Requested by: {ctx.author}', icon_url=ctx.guild.icon_url)
-        embed.set_author(name=self.client.user.mention)
         await ctx.send(embed=embed)
 
     @info.command()
@@ -77,13 +79,12 @@ class Info(commands.Cog):
         embed.add_field(name='Emojis:', value=len(guild.emojis))
         embed.add_field(name='Created:', value=guild.created_at.strftime(
             "%H:%M UTC - %a %d %b %Y"))
-        embed.add_field(name=f'Roles ({len(roles)}):', value=' '.join(
-            [role for role in roles]))
+        embed.add_field(name=f'Roles ({len(roles)}):', value=', '.join(
+            [role.name for role in roles]), inline=False)
         embed.add_field(name='Description:', value=guild.description)
         embed.add_field(name='Members (w/bots):', value=guild.member_count)
         embed.add_field(name='Special features:', value=len(guild.features))
         embed.set_thumbnail(url=guild.icon_url)
-        embed.set_author(name=self.client.user.mention)
         embed.set_footer(
             text=f'Requested by: {ctx.author}', icon_url=ctx.author.avatar_url)
         await ctx.send(embed=embed)

@@ -1,7 +1,6 @@
 Discord/__pycache__
 Discord/commands/__pycache__
 Discord/utils.py
-Discord/data/leaderboard.db
 Discord/logs/bot.log
 
 Twitch/helper.js

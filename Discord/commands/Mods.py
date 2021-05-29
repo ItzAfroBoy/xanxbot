@@ -7,9 +7,12 @@ class Mods(commands.Cog):
 
     def __init__(self, client):
         self.client = client
-        self.s = self.client.get_cog('Storage')
 
     version = '1.0.0'
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.x = self.client.get_cog('Utils')
 
     @commands.command()
     @commands.has_any_role('Druglord', 'Mods')
@@ -48,18 +51,18 @@ class Mods(commands.Cog):
         await ctx.send(f'{member.mention} has been warned for {warning or "an unknown reason"}')
 
     @give.command()
-    async def botInvite(self, ctx: commands.Context, channel: discord.TextChannel = None, member: commands.MemberConverter = None):
+    async def botInvite(self, ctx, channel: discord.TextChannel = None, member: commands.MemberConverter = None):
         if not member:
             if not channel:
                 await ctx.send('Please specify either a channel or member to send the bot link to')
             else:
-                await channel.send(self.s.botLink)
+                await channel.send(self.x.botLink)
         else:
             if not channel:
-                await member.send(self.s.botLink)
+                await member.send(self.x.botLink)
                 await ctx.send(f'The bot invite link has been sent to {member.mention}')
             else:
-                await ctx.send("Doesn't make sense to send it to a channel and dm someone :smiley")
+                await ctx.send("Doesn't make sense to send it to a channel and dm someone :smiley:")
 
     @give.command()
     async def userInvite(self, ctx, member: commands.MemberConverter):

@@ -8,7 +8,7 @@ from discord.flags import Intents
 
 import utils
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 intents = Intents.default()
 intents.members = True

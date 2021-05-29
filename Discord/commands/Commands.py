@@ -9,35 +9,38 @@ class Commands(commands.Cog):
 
     def __init__(self, client):
         self.client = client
-        self.s = self.client.get_cog('Storage')
 
     version = '1.0.0'
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.x = self.client.get_cog('Utils')
+
     @commands.command()
     async def gif(self, ctx):
-        gif = random.choice(self.s.gifs)
+        gif = random.choice(self.x.gifs)
         await ctx.send(f'Here you go\n{gif}')
 
     @commands.command()
     async def calc(self, ctx, numOne: int, op, numTwo: int):
         if op == '+':
             embed = discord.Embed(
-                title=f'Answer: {numOne + numTwo}', color=self.s.color())
+                title=f'Answer: {numOne + numTwo}', color=self.x.color())
             await ctx.send(embed=embed)
         elif op == '-':
             embed = discord.Embed(
-                title=f'Answer: {numOne - numTwo}', color=self.s.color())
+                title=f'Answer: {numOne - numTwo}', color=self.x.color())
             await ctx.send(embed=embed)
         elif op == 'x':
             embed = discord.Embed(
-                title=f'Answer: {numOne * numTwo}', color=self.s.color())
+                title=f'Answer: {numOne * numTwo}', color=self.x.color())
             await ctx.send(embed=embed)
         elif op == '/':
             embed = discord.Embed(
-                title=f'Answer: {numOne / numTwo}', color=self.s.color())
+                title=f'Answer: {numOne / numTwo}', color=self.x.color())
             await ctx.send(embed=embed)
         else:
-            embed = discord.Embed(title='You what?', color=self.s.color())
+            embed = discord.Embed(title='You what?', color=self.x.color())
             embed.add_field(name='Operators:', value='+')
             embed.add_field(name='\t', value='-')
             embed.add_field(name='\t', value='x')

@@ -1,13 +1,14 @@
 import random
 import asyncio
 import discord
+import sqlite3 as sql3
 from discord.ext import commands
 
 
-class Storage(commands.Cog):
+class Utils(commands.Cog):
 
     def __init__(self, client):
-        self.client = client
+        self.client = client    
 
     def color(self):
         colors = []
@@ -16,6 +17,27 @@ class Storage(commands.Cog):
         r = ''.join(colors)
         r = f"0x{r}"
         return int(r, base=16)
+
+    @commands.command()
+    async def sort(self, ctx: commands.Context, mode: str = None, order: str = None):
+        modes = ['lvl', 'exp']
+        orders = ['highest', 'lowest']
+        u = 'DESC'
+        d = 'ASC'
+        db = sql3.connect(r'.\data\leaderboard.db')
+        cur = db.cursor()
+        if not mode and not order:
+            cur.execute(f'SELECT user_id, lvl, exp FROM levels')
+        elif mode in modes and not order:
+            await ctx.send('')
+            if mode == modes[0]:
+                cur.execute(f'SELECT user_id, lvl, exp FROM levels ORDER BY exp DESC LIMIT 0, 49999')
+        
+        res = cur.fetchall()
+        if not res:
+            await ctx.send('Something is wrong!')
+        else:
+
 
     async def GetMessage(self, ctx, contentOne="Default Message", contentTwo="\uFEFF", timeout=100):
         embed = discord.Embed(
@@ -66,4 +88,4 @@ class Storage(commands.Cog):
     version = '1.0.0'
 
 def setup(client):
-    client.add_cog(Storage(client))
+    client.add_cog(Utils(client))

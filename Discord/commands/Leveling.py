@@ -1,5 +1,6 @@
 import logging
 import math
+from os import name
 import sqlite3 as sql3
 import time
 
@@ -11,9 +12,12 @@ class Leveling(commands.Cog):
 
     def __init__(self, client):
         self.client = client
-        self.x = self.client.get_cog('Storage')
 
     version = '1.0.0'
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.x = self.client.get_cog('Utils')
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -28,7 +32,7 @@ class Leveling(commands.Cog):
             if res is None:
                 sql = (
                     "INSERT INTO levels(guild_id, user_id, exp, lvl) VALUES(?,?,?,?)")
-                val = (message.guild.id, message.author.id, 1, 0)
+                val = (message.guild.id, message.author.id, 1, 1)
                 cur.execute(sql, val)
                 db.commit()
             else:
@@ -138,34 +142,43 @@ class Leveling(commands.Cog):
             for i in res:
                 x += 1
                 member = self.client.get_user(int(i[0]))
-                embed.add_field(
-                    name=f'{x}. {member.name}', value=f'Level {i[2]} : {i[1]}xp', inline=False)
+                if not member:
+                    embed.add_field(
+                        name=f'{x}. Webhook', value=f'Level {i[2]} : {i[1]}xp', inline=False)
+                else:
+                    embed.add_field(
+                        name=f'{x}. {member.name}', value=f'Level {i[2]} : {i[1]}xp', inline=False)
             await ctx.send(embed=embed)
             cur.close()
         db.close()
 
     @ranks.command()
-    async def all(self, ctx, member: discord.User = None):
+    async def all(self, ctx, filter: str = None):
         db = sql3.connect(r'.\data\leaderboard.db')
         cur = db.cursor()
-        cur.execute(f'SELECT * FROM levels')
+        cur.execute(f'SELECT user_id, level, FROM levels')
         res = cur.fetchall()
         if res is None:
             await ctx.send('Uhhh ... What?')
             logs.error(
                 'Something is wrong when fetching results from the database. Called on `rank server` command')
         else:
-            x = 0
-            embed = discord.Embed(
-                title=f"{ctx.guild.name}'s leaderboard", color=self.x.color())
-            embed.set_thumbnail(url=ctx.guild.icon_url)
-            embed.set_footer(text=f'{time.strftime("%H:%M:%S - %a %d %b")}')
-            for i in res:
-                x += 1
-                member = await self.client.fetch_user(int(i[1]))
-                guild = await self.client.fetch_guild(int(i[0]))
-                embed.add_field(name=f'{x}. {member.name}', value=f'Level {i[3]} : {i[2]}xp | Server: {guild.name}', inline=False)
-            await ctx.send(embed=embed)
+            if not filter:
+                x = 0
+                embed = discord.Embed(
+                    title=f"{ctx.guild.name}'s leaderboard", color=self.x.color())
+                embed.set_thumbnail(url=ctx.guild.icon_url)
+                embed.set_footer(text=f'{time.strftime("%H:%M:%S - %a %d %b")}')
+                for i in res:
+                    x += 1
+                    try:
+                        member = await self.client.fetch_user(int(i[1]))
+                        embed.add_field(name=f'{x}. {member.name}', value=f'Level {i[3]} : {i[2]}xp ', inline=False)
+                    except discord.NotFound:
+                        pass
+                await ctx.send(embed=embed)
+            else:
+                pass
             cur.close()
         db.close()
 
