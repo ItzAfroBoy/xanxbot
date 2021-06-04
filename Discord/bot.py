@@ -8,13 +8,13 @@ from discord.flags import Intents
 
 import utils
 
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 
 intents = Intents.default()
 intents.members = True
 
 client = commands.Bot(command_prefix='::', intents=intents)
-# client.remove_command('help')
+client.remove_command('help')
 
 
 @client.event

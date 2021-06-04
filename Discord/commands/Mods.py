@@ -7,8 +7,9 @@ class Mods(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+        self.x = client.get_cog('Utils')
 
-    version = '1.0.0'
+    version = '1.0.5'
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -37,7 +38,7 @@ class Mods(commands.Cog):
     @commands.group()
     @commands.has_any_role('Druglord', 'Mods')
     async def give(self, ctx):
-        if ctx.invoked_subcommand is None:
+        if not ctx.invoked_subcommand:
             await ctx.send('Please specify what you want to give')
 
     @give.command()

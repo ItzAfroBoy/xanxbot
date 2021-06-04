@@ -10,7 +10,7 @@ class Commands(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    version = '1.0.0'
+    version = '1.0.3'
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -18,11 +18,13 @@ class Commands(commands.Cog):
 
     @commands.command()
     async def gif(self, ctx):
+        """ Get a random GIF """
         gif = random.choice(self.x.gifs)
         await ctx.send(f'Here you go\n{gif}')
 
     @commands.command()
     async def calc(self, ctx, numOne: int, op, numTwo: int):
+        """ Do simple calculations """
         if op == '+':
             embed = discord.Embed(
                 title=f'Answer: {numOne + numTwo}', color=self.x.color())
@@ -47,6 +49,8 @@ class Commands(commands.Cog):
             embed.add_field(name='\t', value='/')
             embed.set_footer(text=ctx.author, icon_url=ctx.author.avatar_url)
             await ctx.send(embed=embed)
+
+        
 
 
 def setup(client):

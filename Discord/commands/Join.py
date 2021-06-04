@@ -12,13 +12,12 @@ class Join(commands.Cog):
 
     @commands.command()
     @commands.has_role('@everyone')
-    async def join(self, ctx, member: discord.Member = None):
-        x = commands.RoleConverter()
-        j = x.convert(ctx, 'Weed')
+    async def join(self, ctx: commands.Context, member: discord.Member = None):
         member = ctx.author
 
         if ctx.channel.id == 720809487157690461:
-            await member.add_roles(j)
+
+            await member.add_roles()
             await member.send(f'Welcome to {ctx.guild.name}. Please read the rules')
             logs.info(f'{member} has joined {ctx.guild.name}')
 

@@ -9,8 +9,9 @@ class Info(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+        self.x = client.get_cog('Utils')
 
-    version = '1.0.0'
+    version = '1.1.1'
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -91,7 +92,7 @@ class Info(commands.Cog):
 
     @commands.command()
     async def ping(self, ctx, mode: int = 1):
-        """ ==> Bot latency <== """
+        """ Bot latency """
         if mode == 2:
             bf = time.monotonic()
             msg = await ctx.send("Pong! :ping_pong:")
@@ -100,22 +101,45 @@ class Info(commands.Cog):
         else:
             await ctx.send(f"Pong! {int(self.client.latency * 1000)}ms :ping_pong:")
 
-    # @commands.command()
-    # async def help(self, ctx):
-    #     member = ctx.author
-    #     embed = discord.Embed(title='Help', color=self.x.color())
-    #     embed.add_field(name='Prefix', value='::')
-    #     embed.add_field(name='guild', value='Info about the server')
-    #     embed.add_field(name='show', value='Info about a user in the server')
-    #     embed.add_field(name='info', value='Info about the bot')
-    #     embed.add_field(
-    #         name='ping', value='Display the latency between Bot and Discord')
-    #     embed.add_field(name='gif', value='Shows a shit selection of gifs')
-    #     embed.set_author(name=self.client.user.mention)
-    #     embed.set_footer(
-    #         text=f'Requested by: {member}', icon_url=member.avatar_url)
-    #     embed.set_thumbnail(url='https://i.ibb.co/rMrRx5S/Help.png')
+class Help(commands.Cog):
+
+    def __init__(self, client):
+        self.client = client
+        self.x = client.get_cog('Utils')
+        self.commands = discord.Embed(title="Help Page 1 - Commands", description="Use the buttons to navigate", color=self.x.color())
+        self.info = discord.Embed(title='Help Page 2 - Information', description='Page 2', color=self.x.color())
+        self.mods = discord.Embed(title='Help Page 3 - Moderation', description='Page 3', color=self.x.color())
+        self.pages = [self.commands, self.info, self.mods]
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.x = self.client.get_cog('Utils')
+
+    @commands.command()
+    async def help(self, ctx):
+        buttons = [u'\u23EA', u'\u2B05', u'\u27A1', u'\u23E9']
+        current = 0
+        msg = await ctx.send(embed=self.pages[0])
+
+        for button in buttons:
+
+    @commands.command()
+    async def lkj(self, ctx):
+        member = ctx.author
+        embed = discord.Embed(title='Help', color=self.x.color())
+        embed.add_field(name='Prefix', value='::')
+        embed.add_field(name='guild', value='Info about the server')
+        embed.add_field(name='show', value='Info about a user in the server')
+        embed.add_field(name='info', value='Info about the bot')
+        embed.add_field(
+            name='ping', value='Display the latency between Bot and Discord')
+        embed.add_field(name='gif', value='Shows a shit selection of gifs')
+        embed.set_author(name=self.client.user.mention)
+        embed.set_footer(
+            text=f'Requested by: {member}', icon_url=member.avatar_url)
+        embed.set_thumbnail(url='https://i.ibb.co/rMrRx5S/Help.png')
 
 
 def setup(client):
     client.add_cog(Info(client))
+    client.add_cog(Help(client))

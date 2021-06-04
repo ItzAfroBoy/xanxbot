@@ -8,7 +8,7 @@ from discord.ext import commands
 class Utils(commands.Cog):
 
     def __init__(self, client):
-        self.client = client    
+        self.client = client
 
     def color(self):
         colors = []
@@ -18,44 +18,22 @@ class Utils(commands.Cog):
         r = f"0x{r}"
         return int(r, base=16)
 
-    @commands.command()
-    async def sort(self, ctx: commands.Context, mode: str = None, order: str = None):
-        modes = ['lvl', 'exp']
-        orders = ['highest', 'lowest']
-        u = 'DESC'
-        d = 'ASC'
+    def sort(self, mode):
         db = sql3.connect(r'.\data\leaderboard.db')
         cur = db.cursor()
-        if not mode and not order:
-            cur.execute(f'SELECT user_id, lvl, exp FROM levels')
-        elif mode in modes and not order:
-            await ctx.send('')
-            if mode == modes[0]:
-                cur.execute(f'SELECT user_id, lvl, exp FROM levels ORDER BY exp DESC LIMIT 0, 49999')
-        
-        res = cur.fetchall()
-        if not res:
-            await ctx.send('Something is wrong!')
+        if mode:
+            sql = f'SELECT user_id, exp, lvl FROM levels ORDER BY {mode} DESC LIMIT 0, 49999'
         else:
+            sql = f'SELECT user_id, exp, lvl FROM levels'
+        cur.execute(sql)
+        res = cur.fetchall()
 
-
-    async def GetMessage(self, ctx, contentOne="Default Message", contentTwo="\uFEFF", timeout=100):
-        embed = discord.Embed(
-            title=f"{contentOne}",
-            description=f"{contentTwo}",
-        )
-        await ctx.send(embed=embed)
-        try:
-            msg = await self.client.wait_for(
-                "message",
-                timeout=timeout,
-                check=lambda message: message.author == ctx.author
-                and message.channel == ctx.channel,
-            )
-            if msg:
-                return msg.content
-        except asyncio.TimeoutError:
-            return False
+        if not res:
+            return None
+        else:
+            cur.close()
+            db.close()
+            return res
 
     gifs = ['https://media.giphy.com/media/IcifS1qG3YFlS/giphy.gif',
             'https://media.giphy.com/media/XIqCQx02E1U9W/giphy.gif',
@@ -86,6 +64,7 @@ class Utils(commands.Cog):
     logChannel = 736568409973587978
 
     version = '1.0.0'
+
 
 def setup(client):
     client.add_cog(Utils(client))

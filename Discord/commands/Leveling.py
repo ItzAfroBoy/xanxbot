@@ -12,8 +12,9 @@ class Leveling(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+        self.x = client.get_cog('Utils')
 
-    version = '1.0.0'
+    version = '1.2.1'
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -29,7 +30,7 @@ class Leveling(commands.Cog):
             cur.execute(
                 f'SELECT user_id FROM levels WHERE guild_id = {message.guild.id} AND user_id = {message.author.id}')
             res = cur.fetchone()
-            if res is None:
+            if not res:
                 sql = (
                     "INSERT INTO levels(guild_id, user_id, exp, lvl) VALUES(?,?,?,?)")
                 val = (message.guild.id, message.author.id, 1, 1)
@@ -69,13 +70,14 @@ class Leveling(commands.Cog):
 
     @commands.command()
     async def rank(self, ctx, member: discord.Member = None):
+        """ Rank info of the user that calls it or someone in the guild """
         if not member:
             db = sql3.connect(r'.\data\leaderboard.db')
             cursor = db.cursor()
             cursor.execute(
                 f"SELECT user_id, exp, lvl FROM levels WHERE guild_id = {ctx.guild.id} and user_id = {ctx.author.id}")
             res = cursor.fetchone()
-            if res is None:
+            if not res:
                 await ctx.send('You are not ranked yet')
             else:
                 xp = res[1]
@@ -98,7 +100,7 @@ class Leveling(commands.Cog):
             cur.execute(
                 f"SELECT user_id, exp, lvl FROM levels WHERE guild_id = {ctx.guild.id} and user_id = {member.id}")
             res = cur.fetchone()
-            if res is None:
+            if not res:
                 await ctx.send("That user is not ranked")
             else:
                 xp = res[1]
@@ -123,13 +125,14 @@ class Leveling(commands.Cog):
             await ctx.send('Please specify server or all servers: ::ranks server or ::ranks all')
 
     @ranks.command()
-    async def server(self, ctx, member: discord.User = None):
+    async def guild(self, ctx, member: discord.User = None):
+        "Ranking of the guild this command is called in"
         db = sql3.connect(r'.\data\leaderboard.db')
         cur = db.cursor()
         cur.execute(
             f'SELECT user_id, exp, lvl FROM levels WHERE guild_id = {ctx.guild.id}')
         res = cur.fetchall()
-        if res is None:
+        if not res:
             await ctx.send('Uhhh ... What?')
             logs.error(
                 'Something is wrong when fetching results from the database. Called on `rank server` command')
@@ -143,8 +146,7 @@ class Leveling(commands.Cog):
                 x += 1
                 member = self.client.get_user(int(i[0]))
                 if not member:
-                    embed.add_field(
-                        name=f'{x}. Webhook', value=f'Level {i[2]} : {i[1]}xp', inline=False)
+                    pass
                 else:
                     embed.add_field(
                         name=f'{x}. {member.name}', value=f'Level {i[2]} : {i[1]}xp', inline=False)
@@ -153,34 +155,27 @@ class Leveling(commands.Cog):
         db.close()
 
     @ranks.command()
-    async def all(self, ctx, filter: str = None):
-        db = sql3.connect(r'.\data\leaderboard.db')
-        cur = db.cursor()
-        cur.execute(f'SELECT user_id, level, FROM levels')
-        res = cur.fetchall()
-        if res is None:
-            await ctx.send('Uhhh ... What?')
-            logs.error(
-                'Something is wrong when fetching results from the database. Called on `rank server` command')
+    async def all(self, ctx, mode: str = None):
+        """ Ranking that includes info from all guilds """
+        res = self.x.sort(mode)
+        if not res:
+            await ctx.send('Something went wrong')
+            logs.error('Cannot fetch results')
         else:
-            if not filter:
-                x = 0
-                embed = discord.Embed(
-                    title=f"{ctx.guild.name}'s leaderboard", color=self.x.color())
-                embed.set_thumbnail(url=ctx.guild.icon_url)
-                embed.set_footer(text=f'{time.strftime("%H:%M:%S - %a %d %b")}')
-                for i in res:
-                    x += 1
-                    try:
-                        member = await self.client.fetch_user(int(i[1]))
-                        embed.add_field(name=f'{x}. {member.name}', value=f'Level {i[3]} : {i[2]}xp ', inline=False)
-                    except discord.NotFound:
-                        pass
-                await ctx.send(embed=embed)
-            else:
-                pass
-            cur.close()
-        db.close()
+            x = 0
+            embed = discord.Embed(
+                title="Global leaderboard", color=self.x.color())
+            embed.set_thumbnail(url=ctx.guild.icon_url)
+            embed.set_footer(text=f'{time.strftime("%H:%M:%S - %a %d %b")}')
+            for i in res:
+                x += 1
+                try:
+                    member = await self.client.fetch_user(int(i[0]))
+                    embed.add_field(
+                        name=f'{x}. {member.name}', value=f'Level {i[2]} : {i[1]}xp ', inline=False)
+                except:
+                    pass
+            await ctx.send(embed=embed)
 
 
 logs = logging.getLogger('bot')
